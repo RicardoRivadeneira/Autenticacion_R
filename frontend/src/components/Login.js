@@ -1,64 +1,91 @@
-// src/components/Login.js
-
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { USERS_BBDD } from './bbdd'; // Importa el arreglo USERS_BBDD desde el archivo bbdd.js
+import './styles.css'; // Importa el archivo CSS de estilos
 
-function Login() {
+
+function LoginForm({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); // Estado para almacenar mensajes de error
-  const navigate = useNavigate(); // Hook para redirigir
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json(); // Asume que el servidor envía un mensaje de error específico
-        throw new Error(errorData.message || 'Login failed');
-      }
-
-      const { token } = await response.json();
-      localStorage.setItem('token', token);
-      navigate('/profile'); // Redirige al usuario a la página de perfil
-    } catch (error) {
-      setErrorMessage(error.message); // Muestra el mensaje de error específico
+    const jwt = await onLogin(email, password);
+    if (jwt) {
+      console.log('Inicio de sesión exitoso');
+      // Aquí podrías redirigir a otra página o realizar otras acciones después del inicio de sesión exitoso
+    } else {
+      console.log('Error al iniciar sesión');
     }
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <label>
-        Email:
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </label>
-      <br />
-      <label>
-        Password:
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </label>
-      <br />
-      {errorMessage && <p>{errorMessage}</p>} {/* Muestra mensajes de error */}
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
       <button type="submit">Login</button>
     </form>
   );
 }
 
-export default Login;
+function Profile({ profile }) {
+  return (
+    <div>
+      <h2>User Profile</h2>
+      <p>Name: {profile.name}</p>
+      <p>Email: {profile.email}</p>
+      {/* Other profile information */}
+    </div>
+  );
+}
+
+function App() {
+  const [jwt, setJwt] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  const login = async (email, password) => {
+    try {
+      // Simulación de autenticación verificando los datos del usuario en USERS_BBDD
+      const user = USERS_BBDD.find(user => user.email === email && user.password === password);
+      if (!user) {
+        throw new Error('Usuario o contraseña incorrectos');
+      }
+
+      // Simulación de generación de token de sesión
+      const jwtToken = 'your_generated_jwt_token';
+
+      // Simulación de solicitud de perfil de usuario
+      setProfile(user);
+
+      // Simulación de éxito en el inicio de sesión
+      setJwt(jwtToken);
+      return jwtToken;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  return (
+    <div>
+      {jwt ? (
+        <Profile profile={profile} />
+      ) : (
+        <LoginForm onLogin={login} />
+      )}
+    </div>
+  );
+}
+
+export default App;

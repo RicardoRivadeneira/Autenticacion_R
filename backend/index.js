@@ -9,7 +9,7 @@ import authTokenRouter from "./routes/auth_token.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const expressApp = express();
 
 // Usa CORS
